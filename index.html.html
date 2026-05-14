@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Надя, я тебя люблю</title>
+    <style>
+        :root {
+            --bg1: #050509;
+            --bg2: #130b12;
+            --pink: #ff315f;
+            --pink2: #ff6b8d;
+            --text: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #201018 0%, var(--bg2) 35%, var(--bg1) 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .center-text {
+            max-width: 92vw;
+            text-align: center;
+            font-size: clamp(28px, 6vw, 54px);
+            font-weight: 900;
+            line-height: 1.05;
+            color: var(--text);
+            text-shadow: 0 0 12px rgba(255, 49, 95, 0.9), 0 0 28px rgba(255, 49, 95, 0.65);
+            letter-spacing: 0.02em;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            max-width: 90vw;
+            text-align: center;
+            font-size: clamp(14px, 3.6vw, 18px);
+            color: rgba(255,255,255,0.78);
+            margin-bottom: 22px;
+            text-shadow: 0 0 10px rgba(255, 49, 95, 0.25);
+        }
+
+        .next-btn {
+            pointer-events: auto;
+            text-decoration: none;
+            background: linear-gradient(135deg, #ff315f, #ff6b8d);
+            color: white;
+            font-weight: 800;
+            border-radius: 999px;
+            padding: 14px 24px;
+            font-size: 16px;
+            box-shadow: 0 8px 24px rgba(255, 49, 95, 0.35);
+            border: 1px solid rgba(255,255,255,0.12);
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .next-btn:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 480px) {
+            .overlay {
+                justify-content: flex-end;
+                padding-bottom: 42px;
+            }
+
+            .center-text {
+                font-size: clamp(26px, 8vw, 40px);
+                line-height: 1.1;
+            }
+
+            .subtitle {
+                font-size: 15px;
+                margin-bottom: 18px;
+            }
+
+            .next-btn {
+                width: min(90vw, 320px);
+                padding: 15px 22px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div class="overlay">
+    <div class="center-text">Надя я тебя люблю</div>
+    <div class="subtitle">Открой открытку ниже</div>
+    <a class="next-btn" href="card.html">Открыть открытку</a>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    resize();
+    window.addEventListener('resize', () => {
+        resize();
+        generateHeartPoints();
+    });
+
+    const phrase = 'Надя я тебя люблю ';
+    const points = [];
+    const step = 0.045;
+
+    function generateHeartPoints() {
+        points.length = 0;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const scale = Math.min(w, h) / 30;
+
+        for (let t = 0; t < Math.PI * 2; t += step) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            points.push({
+                x: w / 2 + x * scale,
+                y: h / 2 - y * scale
+            });
+        }
+    }
+
+    generateHeartPoints();
+
+    let time = 0;
+
+    function draw() {
+        time += 0.03;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        ctx.clearRect(0, 0, w, h);
+
+        for (let i = 0; i < points.length; i++) {
+            const p = points[i];
+            const alpha = 0.45 + 0.55 * Math.sin(time + i * 0.22);
+            const fontSize = 12 + 4 * Math.sin(time + i * 0.35);
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.fillStyle = `rgba(255, 70, 105, ${alpha})`;
+            ctx.font = `900 ${fontSize}px monospace`;
+            ctx.fillText(phrase, -phrase.length * fontSize / 4, 0);
+            ctx.restore();
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+</script>
+</body>
+</html>
